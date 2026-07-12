@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChurnRadar — Customer Churn Prediction Dashboard</title>
+<meta name="description" content="Scikit-learn churn prediction model with live risk calculator and revenue-at-risk analysis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">Churn<span class="brand-accent">Radar</span></span>
+    </div>
+    <nav class="nav-links">
+      <a href="#model">Model</a>
+      <a href="#drivers">Drivers</a>
+      <a href="#revenue">Revenue at Risk</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#customers">At-Risk List</a>
+      <a href="#recommendations">Recommendations</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div class="hero-badge"><span class="pulse-dot"></span> MODEL LIVE — scikit-learn Random Forest</div>
+      <h1 class="hero-stat">
+        <span class="hero-stat-top" id="heroPctCustomers">9.2%</span>
+        <span class="hero-stat-label">of customers are high-risk</span>
+      </h1>
+      <p class="hero-sub">
+        They carry <strong><span id="heroPctRevenue">10.7%</span> of annual revenue</strong> —
+        roughly <strong>$<span id="heroRevenueAmt">105,255</span></strong> in the test cohort of
+        <span id="heroTotalCustomers">1,250</span> customers. Losing them costs more than their headcount suggests.
+      </p>
+      <div class="hero-cta">
+        <a href="#calculator" class="btn btn-primary">Try the live risk calculator</a>
+        <a href="#revenue" class="btn btn-ghost">See the revenue breakdown</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODEL COMPARISON -->
+  <section class="section" id="model">
+    <div class="section-head">
+      <span class="eyebrow">01 — Model Selection</span>
+      <h2>Three models, one winner</h2>
+      <p class="section-desc">Logistic Regression, Random Forest, and Gradient Boosting were trained on the same
+        preprocessing pipeline and compared on held-out data. Recall on churners matters most here — a missed
+        churner is costlier than a wasted retention offer.</p>
+    </div>
+    <div class="model-cards" id="modelCards"></div>
+  </section>
+
+  <!-- FEATURE IMPORTANCE -->
+  <section class="section alt" id="drivers">
+    <div class="section-head">
+      <span class="eyebrow">02 — Churn Drivers</span>
+      <h2>What actually predicts churn</h2>
+      <p class="section-desc">Feature importances from the winning model, ranked by contribution.</p>
+    </div>
+    <div class="importance-list" id="importanceList"></div>
+  </section>
+
+  <!-- REVENUE AT RISK -->
+  <section class="section" id="revenue">
+    <div class="section-head">
+      <span class="eyebrow">03 — Business Impact</span>
+      <h2>Revenue concentration by risk tier</h2>
+      <p class="section-desc">Customers are scored and split into three tiers. Watch how revenue share compares
+        to customer share in each tier — that gap is the business case for prioritizing retention spend.</p>
+    </div>
+    <div class="tier-compare" id="tierCompare"></div>
+    <div class="tier-table-wrap">
+      <table class="tier-table" id="tierTable">
+        <thead>
+          <tr><th>Risk Tier</th><th>Customers</th><th>% of Base</th><th>Annual Revenue</th><th>% of Revenue</th><th>Avg. Churn Prob.</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section class="section alt" id="calculator">
+    <div class="section-head">
+      <span class="eyebrow">04 — Signature</span>
+      <h2>Live churn risk calculator</h2>
+      <p class="section-desc">Runs entirely in your browser using the exported logistic-regression coefficients —
+        no server, no API call. Adjust a customer's profile and watch the signal.</p>
+    </div>
+
+    <div class="calc-wrap">
+      <div class="calc-controls">
+        <div class="field">
+          <label for="tenure">Tenure (months) <span class="field-val" id="tenureVal">24</span></label>
+          <input type="range" id="tenure" min="0" max="72" value="24">
+        </div>
+        <div class="field">
+          <label for="monthly">Monthly charges ($) <span class="field-val" id="monthlyVal">65</span></label>
+          <input type="range" id="monthly" min="18" max="120" value="65">
+        </div>
+        <div class="field">
+          <label for="calls">Support calls (last period) <span class="field-val" id="callsVal">1</span></label>
+          <input type="range" id="calls" min="0" max="10" value="1">
+        </div>
+        <div class="field">
+          <label for="contract">Contract type</label>
+          <select id="contract">
+            <option value="Month-to-month">Month-to-month</option>
+            <option value="One year">One year</option>
+            <option value="Two year">Two year</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="internet">Internet service</label>
+          <select id="internet">
+            <option value="Fiber optic">Fiber optic</option>
+            <option value="DSL">DSL</option>
+            <option value="No">No internet</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label class="check"><input type="checkbox" id="techSupport"> Tech support</label>
+          <label class="check"><input type="checkbox" id="onlineSecurity"> Online security</label>
+          <label class="check"><input type="checkbox" id="paperless" checked> Paperless billing</label>
+          <label class="check"><input type="checkbox" id="senior"> Senior citizen</label>
+        </div>
+        <div class="field">
+          <label for="payment">Payment method</label>
+          <select id="payment">
+            <option value="Electronic check">Electronic check</option>
+            <option value="Mailed check">Mailed check</option>
+            <option value="Bank transfer">Bank transfer</option>
+            <option value="Credit card">Credit card</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calc-readout">
+        <div class="signal-meter" id="signalMeter">
+          <div class="signal-bar" data-bar="1"></div>
+          <div class="signal-bar" data-bar="2"></div>
+          <div class="signal-bar" data-bar="3"></div>
+          <div class="signal-bar" data-bar="4"></div>
+          <div class="signal-bar" data-bar="5"></div>
+        </div>
+        <div class="calc-prob" id="calcProb">—</div>
+        <div class="calc-tier" id="calcTier">ADJUST INPUTS</div>
+        <div class="calc-note">Predicted churn probability</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AT RISK CUSTOMERS -->
+  <section class="section" id="customers">
+    <div class="section-head">
+      <span class="eyebrow">05 — Priority List</span>
+      <h2>Top at-risk customers by revenue</h2>
+      <p class="section-desc">The 25 highest-revenue customers in the High Risk tier — the retention team's
+        starting call list.</p>
+    </div>
+    <div class="cust-table-wrap">
+      <table class="cust-table" id="custTable">
+        <thead>
+          <tr><th>Customer ID</th><th>Churn Prob.</th><th>Annual Revenue</th><th>Contract</th><th>Tenure</th><th>Support Calls</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RECOMMENDATIONS -->
+  <section class="section alt" id="recommendations">
+    <div class="section-head">
+      <span class="eyebrow">06 — Action Plan</span>
+      <h2>Recommendations, in priority order</h2>
+    </div>
+    <ol class="rec-list">
+      <li>
+        <span class="rec-num">01</span>
+        <div><h3>Target the High-Risk tier first</h3>
+        <p>~115 customers, ~$105K annual revenue in this sample, 75% average churn probability. Highest expected ROI per retention dollar.</p></div>
+      </li>
+      <li>
+        <span class="rec-num">02</span>
+        <div><h3>Migrate month-to-month customers to annual contracts</h3>
+        <p>Contract type is the single strongest lever the business controls directly. Even a modest switch incentive should meaningfully cut churn.</p></div>
+      </li>
+      <li>
+        <span class="rec-num">03</span>
+        <div><h3>Fix the support-call pipeline</h3>
+        <p>3+ support calls strongly predicts churn — this points to unresolved issues, not random attrition. Route repeat callers to a specialized retention track.</p></div>
+      </li>
+      <li>
+        <span class="rec-num">04</span>
+        <div><h3>Bundle tech support and security into fiber plans</h3>
+        <p>Fiber customers churn more, but those with tech support and online security churn less. Bundling offsets fiber's baseline risk.</p></div>
+      </li>
+      <li>
+        <span class="rec-num">05</span>
+        <div><h3>Re-score the base monthly</h3>
+        <p>Operationalize this pipeline as a monthly job so retention teams always have a fresh, ranked call list.</p></div>
+      </li>
+    </ol>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">Churn<span class="brand-accent">Radar</span></span>
+      </div>
+      <p>Built with scikit-learn (Logistic Regression, Random Forest, Gradient Boosting). Dataset is synthetic
+        telecom churn data generated with realistic correlations; swap in your own CSV in <code>churn_pipeline.py</code>.</p>
+    </div>
+    <div class="footer-meta">
+      <span id="footerModel">Best model: Random Forest</span>
+      <span id="footerAuc">AUC: 0.786</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
