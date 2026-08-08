@@ -1,0 +1,47 @@
+name: Re-score churn model
+
+# Keeps data.json fresh automatically:
+#  - on a schedule (monthly, 1st of the month at 06:00 UTC)
+#  - whenever model/telecom_churn.csv or the pipeline script changes
+#  - manually, via the Actions tab ("Run workflow")
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  push:
+    paths:
+      - "model/telecom_churn.csv"
+      - "model/churn_pipeline.py"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  rescore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r model/requirements.txt
+
+      - name: Run pipeline
+        run: |
+          cd model
+          python churn_pipeline.py
+
+      - name: Commit refreshed data.json (and charts/artifacts) if changed
+        run: |
+          git config user.name "churnradar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data.json model/charts model/*.csv model/model_summary.txt model/best_model_pipeline.joblib
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: auto re-score churn model [skip ci]"
+            git push
+          fi
