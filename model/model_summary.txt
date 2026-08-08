@@ -1,0 +1,7 @@
+Best model: Random Forest
+AUC scores (held-out test): {'Logistic Regression': 0.7849, 'Random Forest': 0.7863, 'Gradient Boosting': 0.7788}
+AUC scores (5-fold CV mean +/- std): {'Logistic Regression': '0.7825 +/- 0.0147', 'Random Forest': '0.7627 +/- 0.0190', 'Gradient Boosting': '0.7627 +/- 0.0189'}
+High risk customers: 115 (9.2% of base)
+High risk revenue: $105,255 (10.7% of revenue)
+Total test-set customers: 1250
+Total test-set annual revenue: $979,325
